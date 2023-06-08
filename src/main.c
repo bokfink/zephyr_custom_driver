@@ -33,30 +33,62 @@ int take_steps(const uint32_t target_num_steps,
   }
 
   uint32_t curr_steps_count = 0U;
-  while (curr_steps_count < target_num_steps) {
-    // STEP 1
-    k_msleep(sleep_time_ms);
-    gpio_pin_set_raw(gpio_dev, IN[3], 0);
-    gpio_pin_set_raw(gpio_dev, IN[1], 1);
-    curr_steps_count++;
+  if (rot_dir == CLOCKWISE) {
+    while (curr_steps_count < target_num_steps) {
+      // STEP 1
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[3], 0);
+      gpio_pin_set_raw(gpio_dev, IN[1], 1);
+      curr_steps_count++;
 
-    // STEP 2
-    k_msleep(sleep_time_ms);
-    gpio_pin_set_raw(gpio_dev, IN[0], 0);
-    gpio_pin_set_raw(gpio_dev, IN[2], 1);
-    curr_steps_count++;
+      // STEP 2
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[0], 0);
+      gpio_pin_set_raw(gpio_dev, IN[2], 1);
+      curr_steps_count++;
 
-    // STEP 3
-    k_msleep(sleep_time_ms);
-    gpio_pin_set_raw(gpio_dev, IN[1], 0);
-    gpio_pin_set_raw(gpio_dev, IN[3], 1);
-    curr_steps_count++;
+      // STEP 3
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[1], 0);
+      gpio_pin_set_raw(gpio_dev, IN[3], 1);
+      curr_steps_count++;
 
-    // STEP 4
-    k_msleep(sleep_time_ms);
-    gpio_pin_set_raw(gpio_dev, IN[2], 0);
-    gpio_pin_set_raw(gpio_dev, IN[0], 1);
-    curr_steps_count++;
+      // STEP 4
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[2], 0);
+      gpio_pin_set_raw(gpio_dev, IN[0], 1);
+      curr_steps_count++;
+    }
+  } else if (rot_dir == COUNTER_CLOCKWISE) {
+    while (curr_steps_count < target_num_steps) {
+      // STEP 1
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[0], 0);
+      gpio_pin_set_raw(gpio_dev, IN[2], 1);
+      curr_steps_count++;
+
+      // STEP 2
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[3], 0);
+      gpio_pin_set_raw(gpio_dev, IN[1], 1);
+      curr_steps_count++;
+
+      // STEP 3
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[2], 0);
+      gpio_pin_set_raw(gpio_dev, IN[0], 1);
+      curr_steps_count++;
+
+      // STEP 4
+      k_msleep(sleep_time_ms);
+      gpio_pin_set_raw(gpio_dev, IN[1], 0);
+      gpio_pin_set_raw(gpio_dev, IN[3], 1);
+      curr_steps_count++;
+    }
+  } else {
+    LOG_ERR("direction should be CLOCKWISE or \
+	    COUNTER_CLOCKWISE");
+    return -EINVAL;
   }
 
   return 0;
@@ -64,7 +96,12 @@ int take_steps(const uint32_t target_num_steps,
 	       
 void main(void)
 {
-  if (take_steps(2048, CLOCKWISE, 50) != 0) {
+  if (take_steps(2048, CLOCKWISE, 4) != 0) {
+    LOG_ERR("could not take steps on motor");
+    return;
+  }
+
+  if (take_steps(2048, COUNTER_CLOCKWISE, 4) != 0) {
     LOG_ERR("could not take steps on motor");
     return;
   }
