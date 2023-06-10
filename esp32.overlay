@@ -1,0 +1,8 @@
+/ {
+	stepper: stepper {
+		 compatible = "generic,28byj48";
+		 status = "okay";
+		 steps-per-rotation = <2048>;
+		 pins = <25 26 27 14>;
+	};
+  };

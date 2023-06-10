@@ -1,0 +1,11 @@
+description: "28BYJ-48 stepper motor"
+
+compatible: "generic,28byj48"
+
+properties:
+  pins:
+    type: array
+    required: true
+  steps-per-rotation:
+    type: int
+    required: true

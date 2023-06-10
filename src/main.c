@@ -1,14 +1,19 @@
 #include <stdint.h>
 #include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(stepper_driver, LOG_LEVEL_DBG);
 
-static const gpio_pin_t IN[] = {25, 26, 27, 14};
+static const gpio_pin_t IN[] = DT_PROP(DT_NODELABEL(stepper),
+				       pins);
 static const struct device *gpio_dev =
   DEVICE_DT_GET(DT_NODELABEL(gpio0));
+
+static const uint32_t steps_per_rotation = DT_PROP(DT_NODELABEL(stepper),
+						   steps_per_rotation);
 
 enum rotation_direction {
   CLOCKWISE,
@@ -93,16 +98,28 @@ int take_steps(const uint32_t target_num_steps,
 
   return 0;
 }
-	       
+
+int rotate_degrees(const uint32_t degrees,
+		   const enum rotation_direction rot_dir,
+		   const int32_t sleep_time_ms)
+{
+  const uint32_t num_steps = (steps_per_rotation * degrees) / 360;
+  if (take_steps(num_steps, rot_dir, sleep_time_ms) != 0) {
+    LOG_ERR("could not rotate %ud degrees", degrees);
+    return -EIO;
+  }
+}
+
 void main(void)
 {
-  if (take_steps(2048, CLOCKWISE, 4) != 0) {
-    LOG_ERR("could not take steps on motor");
+  if (rotate_degrees(360, CLOCKWISE, 4) != 0) {
+    LOG_ERR("failed to rotate motor");
     return;
   }
 
-  if (take_steps(2048, COUNTER_CLOCKWISE, 4) != 0) {
-    LOG_ERR("could not take steps on motor");
+  if (rotate_degrees(360, COUNTER_CLOCKWISE, 4) != 0) {
+    LOG_ERR("failed to rotate motor");
     return;
   }
+
 }
